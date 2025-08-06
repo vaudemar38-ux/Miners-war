@@ -2,15 +2,23 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meu Jogo</title>
-  <style>
-    body {
-      margin: 0;
-      background-color: white;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Miners War</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <audio autoplay loop>
+    <source src="fundo.mp3" type="audio/mpeg">
+    Seu navegador não suporta áudio.
+  </audio>
+
+  <div class="menu">
+    <h1>Miners War</h1>
+    <button onclick="jogar()">Jogar</button>
+    <button onclick="opcoes()">Opções</button>
+    <button onclick="loja()">Loja</button>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
