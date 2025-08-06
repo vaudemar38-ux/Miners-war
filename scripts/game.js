@@ -142,4 +142,32 @@ document.getElementById("rightKey").addEventListener("change", (e) => {
   rightKey = e.target.value.toLowerCase();
 });
 
+const seed = 12345; // mundo fixo para todos
+function seededRandom(seed) {
+  let x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
+function random(seedRef) {
+  let x = Math.sin(seedRef.value++) * 10000;
+  return x - Math.floor(x);
+}
+let rng = { value: seed };
+
+// Gerar terreno
+for (let y = 0; y < mapHeight; y++) {
+  for (let x = 0; x < mapWidth; x++) {
+    // Apenas preencher linha inferior com blocos
+    if (y >= mapHeight - 1) {
+      ground.push({
+        x: x * blockSize,
+        y: y * blockSize,
+        width: blockSize,
+        height: blockSize,
+        type: "terra"
+      });
+    }
+  }
+}
+
+
 gameLoop();
