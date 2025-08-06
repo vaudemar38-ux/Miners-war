@@ -29,15 +29,7 @@ const gravity = 0.5;
 const jumpForce = -12;
 const moveSpeed = 5;
 
-const ground = [];
 
-for (let y = 0; y < mapHeight; y++) {
-  for (let x = 0; x < mapWidth; x++) {
-    if (y >= mapHeight - 1) {
-      ground.push({ x: x * blockSize, y: y * blockSize, width: blockSize, height: blockSize });
-    }
-  }
-}
 
 const music = new Audio("assets/songs/game.mp3");
 music.loop = true;
@@ -142,6 +134,7 @@ document.getElementById("rightKey").addEventListener("change", (e) => {
   rightKey = e.target.value.toLowerCase();
 });
 
+// MUNDO COM SEED FIXA
 const seed = 12345; // mundo fixo para todos
 function seededRandom(seed) {
   let x = Math.sin(seed++) * 10000;
@@ -153,10 +146,12 @@ function random(seedRef) {
 }
 let rng = { value: seed };
 
-// Gerar terreno
+// Gerar terreno com várias camadas de terra
+const ground = [];
+const groundHeight = 10; // número de camadas sólidas de terra (na base do mapa)
+
 for (let y = 0; y < mapHeight; y++) {
   for (let x = 0; x < mapWidth; x++) {
-    // Apenas preencher linha inferior com blocos
     if (y >= mapHeight - groundHeight) {
       ground.push({
         x: x * blockSize,
@@ -168,6 +163,7 @@ for (let y = 0; y < mapHeight; y++) {
     }
   }
 }
+
 
 
 gameLoop();
