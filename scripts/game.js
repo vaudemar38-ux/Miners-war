@@ -73,18 +73,30 @@ function update() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // fundo removido
   ctx.fillStyle = "#333";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   for (let block of ground) {
-    ctx.fillStyle = "brown";
+    switch (block.type) {
+      case "grama":
+        ctx.fillStyle = "green";
+        break;
+      case "terra":
+        ctx.fillStyle = "brown";
+        break;
+      case "pedra":
+        ctx.fillStyle = "gray";
+        break;
+      default:
+        ctx.fillStyle = "black";
+    }
     ctx.fillRect(block.x - camera.x, block.y - camera.y, block.width, block.height);
   }
 
   ctx.fillStyle = player.color;
   ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
 }
+
 
 function gameLoop() {
   update();
@@ -135,34 +147,63 @@ document.getElementById("rightKey").addEventListener("change", (e) => {
 });
 
 // MUNDO COM SEED FIXA
-const seed = 12345; // mundo fixo para todos
-function seededRandom(seed) {
-  let x = Math.sin(seed++) * 10000;
-  return x - Math.floor(x);
-}
-function random(seedRef) {
-  let x = Math.sin(seedRef.value++) * 10000;
-  return x - Math.floor(x);
-}
+const seed = 12345; // mundo fixo
 let rng = { value: seed };
 
-// Gerar terreno com várias camadas de terra
-const ground = [];
-const groundHeight = 10; // número de camadas sólidas de terra (na base do mapa)
+// Função de número aleatório baseado em seed
+function random(seedRef) {
+  const x = Math.sin(seedRef.value++) * 10000;
+  return x - Math.floor(x);
+}
 
-for (let y = 0; y < mapHeight; y++) {
-  for (let x = 0; x < mapWidth; x++) {
-    if (y >= mapHeight - groundHeight) {
-      ground.push({
-        x: x * blockSize,
-        y: y * blockSize,
-        width: blockSize,
-        height: blockSize,
-        type: "terra"
-      });
-    }
+// Geração de altura da superfície com irregularidade suave
+const surfaceHeights = [];
+let currentHeight = 20 + Math.floor(random(rng) * 5); // altura inicial entre 20 e 25
+for (let x = 0; x < mapWidth; x++) {
+  const change = Math.floor(random(rng) * 3) - 1; // -1, 0 ou +1
+  currentHeight += change;
+  if (currentHeight < 15) currentHeight = 15;
+  if (currentHeight > 30) currentHeight = 30;
+  surfaceHeights.push(currentHeight);
+}
+
+// Gerar blocos com base na superfície
+for (let x = 0; x < mapWidth; x++) {
+  const surfaceY = surfaceHeights[x];
+
+  // Monte/grama
+  ground.push({
+    x: x * blockSize,
+    y: surfaceY * blockSize,
+    width: blockSize,
+    height: blockSize,
+    type: "grama"
+  });
+
+  // Terra: da camada abaixo da grama até a 9ª camada
+  for (let y = surfaceY + 1; y < surfaceY + 10; y++) {
+    if (y >= mapHeight) continue; // Evita ultrapassar limite do mundo visível
+    ground.push({
+      x: x * blockSize,
+      y: y * blockSize,
+      width: blockSize,
+      height: blockSize,
+      type: "terra"
+    });
+  }
+
+  // Pedra: a partir da 10ª camada abaixo da grama
+  for (let y = surfaceY + 10; y < mapHeight + 10; y++) {
+    ground.push({
+      x: x * blockSize,
+      y: y * blockSize,
+      width: blockSize,
+      height: blockSize,
+      type: "pedra"
+    });
   }
 }
+
 
 
 
