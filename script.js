@@ -1,18 +1,46 @@
+const playBtn = document.getElementById('playBtn');
+const optionsBtn = document.getElementById('optionsBtn');
+const storeBtn = document.getElementById('storeBtn');
+const optionsMenu = document.getElementById('options');
+const storeMenu = document.getElementById('store');
+const volumeSlider = document.getElementById('volumeSlider');
+const bgMusic = document.getElementById('bgMusic');
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const BLOCK_SIZE = 16;
-const MAP_WIDTH = 400;
-const MAP_HEIGHT = 50;
-const GRAVITY = 0.5;
-const JUMP_FORCE = -10;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Inicializar volume
+bgMusic.volume = volumeSlider.value;
+bgMusic.play();
+
+// Ajustar volume ao mover slider
+volumeSlider.addEventListener('input', () => {
+  bgMusic.volume = volumeSlider.value;
+});
+
+// Botões do menu
+optionsBtn.addEventListener('click', () => {
+  optionsMenu.classList.toggle('hidden');
+});
+
+storeBtn.addEventListener('click', () => {
+  storeMenu.classList.toggle('hidden');
+});
+
+playBtn.addEventListener('click', startGame);
 
 let map = [];
+const blockSize = 32;
+const mapWidth = 400;
+const mapHeight = 50;
+
 let player = {
-  x: 50,
-  y: 200,
-  width: BLOCK_SIZE,
-  height: BLOCK_SIZE,
+  x: 100,
+  y: 100,
+  width: blockSize,
+  height: blockSize,
   color: 'blue',
   velocityY: 0,
   onGround: false
@@ -20,62 +48,59 @@ let player = {
 
 function generateMap() {
   map = [];
-  for (let y = 0; y < MAP_HEIGHT; y++) {
-    let row = [];
-    for (let x = 0; x < MAP_WIDTH; x++) {
-      if (y > 40) {
-        row.push(1); // terra
+  for (let y = 0; y < mapHeight; y++) {
+    const row = [];
+    for (let x = 0; x < mapWidth; x++) {
+      if (y > 45) {
+        row.push('brown');
       } else {
-        row.push(0); // ar
+        row.push(null);
       }
     }
     map.push(row);
   }
 }
 
-function drawMap(offsetX = 0, offsetY = 0) {
-  for (let y = 0; y < MAP_HEIGHT; y++) {
-    for (let x = 0; x < MAP_WIDTH; x++) {
-      if (map[y][x] === 1) {
-        ctx.fillStyle = 'brown';
-        ctx.fillRect(x * BLOCK_SIZE - offsetX, y * BLOCK_SIZE - offsetY, BLOCK_SIZE, BLOCK_SIZE);
+function drawMap(offsetX) {
+  for (let y = 0; y < mapHeight; y++) {
+    for (let x = 0; x < mapWidth; x++) {
+      const block = map[y][x];
+      if (block) {
+        ctx.fillStyle = block;
+        ctx.fillRect(x * blockSize - offsetX, y * blockSize, blockSize, blockSize);
       }
     }
   }
 }
 
-function drawPlayer(offsetX = 0, offsetY = 0) {
+function drawPlayer(offsetX) {
   ctx.fillStyle = player.color;
-  ctx.fillRect(player.x - offsetX, player.y - offsetY, player.width, player.height);
+  ctx.fillRect(player.x - offsetX, player.y, player.width, player.height);
 }
 
 let keys = {};
+document.addEventListener('keydown', e => keys[e.key] = true);
+document.addEventListener('keyup', e => keys[e.key] = false);
 
-document.addEventListener('keydown', (e) => {
-  keys[e.key] = true;
-});
-document.addEventListener('keyup', (e) => {
-  keys[e.key] = false;
-});
-
-function update() {
-  // Movimento horizontal
-  if (keys['a']) player.x -= 2;
-  if (keys['d']) player.x += 2;
+function updatePlayer() {
+  if (keys['ArrowLeft']) player.x -= 5;
+  if (keys['ArrowRight']) player.x += 5;
 
   // Pulo
-  if (keys['w'] && player.onGround) {
-    player.velocityY = JUMP_FORCE;
+  if (keys[' '] && player.onGround) {
+    player.velocityY = -12;
     player.onGround = false;
   }
 
   // Gravidade
+  player.velocityY += 0.5;
   player.y += player.velocityY;
-  player.velocityY += GRAVITY;
 
-  // Checagem de colisão com o chão
-  if (player.y + player.height >= 41 * BLOCK_SIZE) {
-    player.y = 41 * BLOCK_SIZE - player.height;
+  // Colisão com o chão
+  const tileY = Math.floor((player.y + player.height) / blockSize);
+  const tileX = Math.floor(player.x / blockSize);
+  if (map[tileY] && map[tileY][tileX]) {
+    player.y = tileY * blockSize - player.height;
     player.velocityY = 0;
     player.onGround = true;
   }
@@ -83,32 +108,18 @@ function update() {
 
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  update();
-  drawMap();
-  drawPlayer();
+
+  const offsetX = player.x - canvas.width / 2;
+  drawMap(offsetX);
+  updatePlayer();
+  drawPlayer(offsetX);
+
   requestAnimationFrame(gameLoop);
 }
 
 function startGame() {
-  document.getElementById('menu').style.display = 'none';
-  document.getElementById('options').style.display = 'none';
-  canvas.style.display = 'block';
   generateMap();
+  player.x = 100;
+  player.y = 100;
   gameLoop();
 }
-
-function openOptions() {
-  document.getElementById('menu').style.display = 'none';
-  document.getElementById('options').style.display = 'block';
-}
-
-function closeOptions() {
-  document.getElementById('options').style.display = 'none';
-  document.getElementById('menu').style.display = 'block';
-}
-
-// Controle de volume
-const music = document.getElementById('backgroundMusic');
-document.getElementById('volumeControl').addEventListener('input', (e) => {
-  music.volume = e.target.value;
-});
