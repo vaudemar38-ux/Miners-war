@@ -157,7 +157,7 @@ let rng = { value: seed };
 for (let y = 0; y < mapHeight; y++) {
   for (let x = 0; x < mapWidth; x++) {
     // Apenas preencher linha inferior com blocos
-    if (y >= mapHeight - 1) {
+    if (y >= mapHeight - groundHeight) {
       ground.push({
         x: x * blockSize,
         y: y * blockSize,
