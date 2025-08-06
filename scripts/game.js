@@ -13,7 +13,6 @@ let keys = {};
 let leftKey = 'a';
 let rightKey = 'd';
 let isPaused = false;
-let ground = [];
 
 const player = {
   x: 100,
@@ -55,9 +54,27 @@ function update() {
       player.y < block.y + block.height &&
       player.y + player.height > block.y
     ) {
-      player.y = block.y - player.height;
-      player.velocityY = 0;
-      player.onGround = true;
+      const overlapX = (player.x + player.width / 2) - (block.x + block.width / 2);
+      const overlapY = (player.y + player.height / 2) - (block.y + block.height / 2);
+      const halfWidths = (player.width + block.width) / 2;
+      const halfHeights = (player.height + block.height) / 2;
+
+      const offsetX = halfWidths - Math.abs(overlapX);
+      const offsetY = halfHeights - Math.abs(overlapY);
+
+      if (offsetX < offsetY) {
+        player.x += overlapX > 0 ? offsetX : -offsetX;
+        player.velocityX = 0;
+      } else {
+        if (overlapY > 0) {
+          player.y += offsetY;
+          player.velocityY = 0;
+        } else {
+          player.y -= offsetY;
+          player.velocityY = 0;
+          player.onGround = true;
+        }
+      }
     }
   }
 
@@ -71,23 +88,18 @@ function update() {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   ctx.fillStyle = "#333";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   for (let block of ground) {
     switch (block.type) {
-      case "grama":
-        ctx.fillStyle = "green";
-        break;
-      case "terra":
-        ctx.fillStyle = "brown";
-        break;
-      case "pedra":
-        ctx.fillStyle = "gray";
-        break;
-      default:
-        ctx.fillStyle = "black";
+      case "grama": ctx.fillStyle = "green"; break;
+      case "terra": ctx.fillStyle = "brown"; break;
+      case "pedra": ctx.fillStyle = "gray"; break;
+      case "neve": ctx.fillStyle = "white"; break;
+      case "areia": ctx.fillStyle = "yellow"; break;
+      case "grama_escura": ctx.fillStyle = "#0f5f0f"; break;
+      default: ctx.fillStyle = "black";
     }
     ctx.fillRect(block.x - camera.x, block.y - camera.y, block.width, block.height);
   }
@@ -102,7 +114,7 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// PAUSE SYSTEM
+// PAUSE MENU + CONTROLES
 const pauseBtn = document.getElementById("pauseButton");
 const pauseMenu = document.getElementById("pauseMenu");
 const optionsMenu = document.getElementById("optionsMenu");
@@ -145,9 +157,96 @@ document.getElementById("rightKey").addEventListener("change", (e) => {
   rightKey = e.target.value.toLowerCase();
 });
 
-// GERAR O MUNDO
+// GERAÇÃO DE MUNDO COM CAVERNAS NATURAIS
 const seed = 12345;
-generateWorld(seed);
+let rng = { value: seed };
 
-// INICIAR LOOP
+function random(seedRef) {
+  const x = Math.sin(seedRef.value++) * 10000;
+  return x - Math.floor(x);
+}
+
+const ground = [];
+const world = [];
+const surfaceHeights = [];
+
+let currentHeight = 20 + Math.floor(random(rng) * 5);
+for (let x = 0; x < mapWidth; x++) {
+  const change = Math.floor(random(rng) * 3) - 1;
+  currentHeight += change;
+  if (currentHeight < 15) currentHeight = 15;
+  if (currentHeight > 30) currentHeight = 30;
+  surfaceHeights.push(currentHeight);
+}
+
+for (let x = 0; x < mapWidth; x++) {
+  world[x] = [];
+  const surfaceY = surfaceHeights[x];
+  const biomaIndex = Math.floor(x / 100);
+  let blocoTopo = "grama";
+  let blocoSub = "terra";
+
+  if (biomaIndex === 1) blocoTopo = "neve";
+  else if (biomaIndex === 2) blocoTopo = "areia", blocoSub = "areia";
+  else if (biomaIndex === 3) blocoTopo = "grama_escura";
+
+  for (let y = 0; y < mapHeight + 10; y++) {
+    if (y === surfaceY) world[x][y] = blocoTopo;
+    else if (y > surfaceY && y < surfaceY + 10) world[x][y] = blocoSub;
+    else if (y >= surfaceY + 10) world[x][y] = "pedra";
+    else world[x][y] = "air";
+  }
+}
+
+// 🕳️ GERAÇÃO DE CAVERNAS AVANÇADAS
+function digCave(startX, startY, maxLength) {
+  let x = startX;
+  let y = startY;
+
+  for (let i = 0; i < maxLength; i++) {
+    const radius = Math.floor(random(rng) * 3) + 2;
+    for (let dx = -radius; dx <= radius; dx++) {
+      for (let dy = -radius; dy <= radius; dy++) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (
+          nx >= 0 && nx < mapWidth &&
+          ny >= 0 && ny < mapHeight + 10 &&
+          Math.sqrt(dx * dx + dy * dy) <= radius
+        ) {
+          world[nx][ny] = "air";
+        }
+      }
+    }
+
+    // Caminho mais orgânico
+    const dir = Math.floor(random(rng) * 4);
+    if (dir === 0 && x < mapWidth - 1) x++;
+    else if (dir === 1 && x > 0) x--;
+    if (dir === 2 && y < mapHeight + 9) y++;
+    else if (dir === 3 && y > 0) y--;
+  }
+}
+
+// 🕳️ DUAS CAVERNAS INDEPENDENTES
+digCave(80, surfaceHeights[80] + 2, 150);
+digCave(300, surfaceHeights[300] + 2, 180);
+
+// TRANSFORMAR world[x][y] em ground[]
+for (let x = 0; x < mapWidth; x++) {
+  for (let y = 0; y < mapHeight + 10; y++) {
+    const type = world[x][y];
+    if (type && type !== "air") {
+      ground.push({
+        x: x * blockSize,
+        y: y * blockSize,
+        width: blockSize,
+        height: blockSize,
+        type: type
+      });
+    }
+  }
+}
+
+
 gameLoop();
