@@ -1,21 +1,16 @@
 body {
   margin: 0;
   padding: 0;
-  background-image: url('fundo.png');
+  background: url('assets/UI/fundo.png') no-repeat center center fixed;
   background-size: cover;
-  background-position: center;
-  font-family: Arial, sans-serif;
-  color: white;
-  text-align: center;
+  font-family: sans-serif;
 }
 
-.menu {
-  margin-top: 100px;
-}
-
-button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
+#menu, #options {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 10px;
 }
