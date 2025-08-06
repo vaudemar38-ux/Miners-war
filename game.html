@@ -5,33 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Miners War - Jogo</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    #pauseButton {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+    }
+
+    .pause-icon {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .pause-icon div {
+      background-color: white;
+      width: 8px;
+      height: 30px;
+      border-radius: 2px;
+    }
+  </style>
 </head>
 <body>
-    <button id="pauseButton">
-  <img src="assets/UI/pause.png" alt="Pause" />
-</button>
+  <button id="pauseButton" title="Pausar">
+    <div class="pause-icon">
+      <div></div>
+      <div></div>
+    </div>
+  </button>
 
-<div id="pauseMenu" style="display: none;">
-  <button id="resumeButton">Continuar</button>
-  <button id="optionsButton">Opções</button>
-  <button id="exitButton">Sair</button>
-</div>
+  <div id="pauseMenu" style="display: none;">
+    <button id="resumeButton">Continuar</button>
+    <button id="optionsButton">Opções</button>
+    <button id="exitButton">Sair</button>
+  </div>
 
-<div id="optionsMenu" style="display: none;">
-  <label>Volume:
-    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" />
-  </label><br/>
-  <label>Tecla esquerda:
-    <input type="text" id="leftKey" value="a" maxlength="1" />
-  </label><br/>
-  <label>Tecla direita:
-    <input type="text" id="rightKey" value="d" maxlength="1" />
-  </label><br/>
-  <button id="closeOptions">Fechar</button>
-</div>
+  <div id="optionsMenu" style="display: none;">
+    <label>Volume:
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.01" />
+    </label><br/>
+    <label>Tecla esquerda:
+      <input type="text" id="leftKey" value="a" maxlength="1" />
+    </label><br/>
+    <label>Tecla direita:
+      <input type="text" id="rightKey" value="d" maxlength="1" />
+    </label><br/>
+    <button id="closeOptions">Fechar</button>
+  </div>
 
   <canvas id="gameCanvas"></canvas>
 
-  <script src="scripts/game.js"></script>
-</body>
-</html>
+  <script src
