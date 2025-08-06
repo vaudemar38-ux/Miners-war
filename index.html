@@ -1,36 +1,40 @@
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Miners War</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="menu">
-    <button id="playBtn">Jogar</button>
-    <button id="optionsBtn">Opções</button>
-    <button id="storeBtn">Loja</button>
+  <img src="assets/UI/fundo.png" id="background" alt="fundo">
+  
+  <div id="menu">
+    <button onclick="window.location.href='game.html'">Jogar</button>
+    <button onclick="toggleOptions()">Opções</button>
+    <button>Loja</button>
   </div>
 
-  <div id="options" class="hidden">
-    <label for="volumeSlider">Volume da música:</label>
-    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5">
+  <div id="options" style="display: none;">
+    <label for="volume">Volume da Música</label>
+    <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
   </div>
 
-  <div id="store" class="hidden">
-    <h2>Loja</h2>
-    <p>Itens em breve!</p>
-  </div>
-
-  <canvas id="gameCanvas"></canvas>
-
-  <audio id="bgMusic" loop autoplay>
-    <source src="assets/songs/fundo.mp3" type="audio/mpeg">
-    Seu navegador não suporta áudio HTML5.
+  <audio id="bg-music" loop autoplay>
+    <source src="assets/songs/fundo.mp3" type="audio/mp3">
   </audio>
 
-  <script src="script.js"></script>
+  <script>
+    const music = document.getElementById('bg-music');
+    music.volume = 0.5;
+
+    document.getElementById('volume').addEventListener('input', (e) => {
+      music.volume = e.target.value;
+    });
+
+    function toggleOptions() {
+      const opt = document.getElementById("options");
+      opt.style.display = (opt.style.display === "none") ? "block" : "none";
+    }
+  </script>
 </body>
 </html>

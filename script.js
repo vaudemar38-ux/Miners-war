@@ -1,125 +1,114 @@
-const playBtn = document.getElementById('playBtn');
-const optionsBtn = document.getElementById('optionsBtn');
-const storeBtn = document.getElementById('storeBtn');
-const optionsMenu = document.getElementById('options');
-const storeMenu = document.getElementById('store');
-const volumeSlider = document.getElementById('volumeSlider');
-const bgMusic = document.getElementById('bgMusic');
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Miners War - Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #87CEEB; /* céu azul */
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
 
-// Inicializar volume
-bgMusic.volume = volumeSlider.value;
-bgMusic.play();
+    const tileSize = 32;
+    const mapWidth = 400;
+    const mapHeight = 50;
 
-// Ajustar volume ao mover slider
-volumeSlider.addEventListener('input', () => {
-  bgMusic.volume = volumeSlider.value;
-});
+    const player = {
+      x: 100,
+      y: 0,
+      width: 32,
+      height: 32,
+      color: 'blue',
+      dx: 0,
+      dy: 0,
+      speed: 3,
+      jump: -10,
+      gravity: 0.5,
+      onGround: false
+    };
 
-// Botões do menu
-optionsBtn.addEventListener('click', () => {
-  optionsMenu.classList.toggle('hidden');
-});
+    const keys = {};
+    window.addEventListener('keydown', e => keys[e.key] = true);
+    window.addEventListener('keyup', e => keys[e.key] = false);
 
-storeBtn.addEventListener('click', () => {
-  storeMenu.classList.toggle('hidden');
-});
-
-playBtn.addEventListener('click', startGame);
-
-let map = [];
-const blockSize = 32;
-const mapWidth = 400;
-const mapHeight = 50;
-
-let player = {
-  x: 100,
-  y: 100,
-  width: blockSize,
-  height: blockSize,
-  color: 'blue',
-  velocityY: 0,
-  onGround: false
-};
-
-function generateMap() {
-  map = [];
-  for (let y = 0; y < mapHeight; y++) {
-    const row = [];
-    for (let x = 0; x < mapWidth; x++) {
-      if (y > 45) {
-        row.push('brown');
-      } else {
-        row.push(null);
+    const ground = [];
+    for (let y = 45; y < mapHeight; y++) {
+      for (let x = 0; x < mapWidth; x++) {
+        ground.push({ x: x * tileSize, y: y * tileSize, width: tileSize, height: tileSize });
       }
     }
-    map.push(row);
-  }
-}
 
-function drawMap(offsetX) {
-  for (let y = 0; y < mapHeight; y++) {
-    for (let x = 0; x < mapWidth; x++) {
-      const block = map[y][x];
-      if (block) {
-        ctx.fillStyle = block;
-        ctx.fillRect(x * blockSize - offsetX, y * blockSize, blockSize, blockSize);
+    function update() {
+      player.dx = 0;
+      if (keys['ArrowLeft'] || keys['a']) player.dx = -player.speed;
+      if (keys['ArrowRight'] || keys['d']) player.dx = player.speed;
+
+      if ((keys['ArrowUp'] || keys['w'] || keys[' ']) && player.onGround) {
+        player.dy = player.jump;
+        player.onGround = false;
       }
+
+      player.dy += player.gravity;
+      player.x += player.dx;
+      player.y += player.dy;
+
+      // Simples colisão com o "chão"
+      player.onGround = false;
+      for (let block of ground) {
+        if (
+          player.x < block.x + block.width &&
+          player.x + player.width > block.x &&
+          player.y < block.y + block.height &&
+          player.y + player.height > block.y
+        ) {
+          // Colisão vertical
+          if (player.dy > 0) {
+            player.y = block.y - player.height;
+            player.dy = 0;
+            player.onGround = true;
+          }
+        }
+      }
+
+      // Limites do mapa
+      if (player.y > canvas.height) player.y = 0;
     }
-  }
-}
 
-function drawPlayer(offsetX) {
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x - offsetX, player.y, player.width, player.height);
-}
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-let keys = {};
-document.addEventListener('keydown', e => keys[e.key] = true);
-document.addEventListener('keyup', e => keys[e.key] = false);
+      // Blocos de terra
+      ctx.fillStyle = '#8B4513';
+      for (let block of ground) {
+        if (block.x >= player.x - 800 && block.x <= player.x + 800) {
+          ctx.fillRect(block.x, block.y, block.width, block.height);
+        }
+      }
 
-function updatePlayer() {
-  if (keys['ArrowLeft']) player.x -= 5;
-  if (keys['ArrowRight']) player.x += 5;
+      // Jogador
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
 
-  // Pulo
-  if (keys[' '] && player.onGround) {
-    player.velocityY = -12;
-    player.onGround = false;
-  }
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
 
-  // Gravidade
-  player.velocityY += 0.5;
-  player.y += player.velocityY;
-
-  // Colisão com o chão
-  const tileY = Math.floor((player.y + player.height) / blockSize);
-  const tileX = Math.floor(player.x / blockSize);
-  if (map[tileY] && map[tileY][tileX]) {
-    player.y = tileY * blockSize - player.height;
-    player.velocityY = 0;
-    player.onGround = true;
-  }
-}
-
-function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const offsetX = player.x - canvas.width / 2;
-  drawMap(offsetX);
-  updatePlayer();
-  drawPlayer(offsetX);
-
-  requestAnimationFrame(gameLoop);
-}
-
-function startGame() {
-  generateMap();
-  player.x = 100;
-  player.y = 100;
-  gameLoop();
-}
+    loop();
+  </script>
+</body>
+</html>
