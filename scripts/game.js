@@ -13,6 +13,7 @@ let keys = {};
 let leftKey = 'a';
 let rightKey = 'd';
 let isPaused = false;
+let ground = [];
 
 const player = {
   x: 100,
@@ -28,8 +29,6 @@ const player = {
 const gravity = 0.5;
 const jumpForce = -12;
 const moveSpeed = 5;
-
-
 
 const music = new Audio("assets/songs/game.mp3");
 music.loop = true;
@@ -97,13 +96,13 @@ function draw() {
   ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
 }
 
-
 function gameLoop() {
   update();
   draw();
   requestAnimationFrame(gameLoop);
 }
 
+// PAUSE SYSTEM
 const pauseBtn = document.getElementById("pauseButton");
 const pauseMenu = document.getElementById("pauseMenu");
 const optionsMenu = document.getElementById("optionsMenu");
@@ -146,65 +145,9 @@ document.getElementById("rightKey").addEventListener("change", (e) => {
   rightKey = e.target.value.toLowerCase();
 });
 
-// MUNDO COM SEED FIXA
-const seed = 12345; // mundo fixo
-let rng = { value: seed };
+// GERAR O MUNDO
+const seed = 12345;
+generateWorld(seed);
 
-// Função de número aleatório baseado em seed
-function random(seedRef) {
-  const x = Math.sin(seedRef.value++) * 10000;
-  return x - Math.floor(x);
-}
-
-// Geração de altura da superfície com irregularidade suave
-const surfaceHeights = [];
-let currentHeight = 20 + Math.floor(random(rng) * 5); // altura inicial entre 20 e 25
-for (let x = 0; x < mapWidth; x++) {
-  const change = Math.floor(random(rng) * 3) - 1; // -1, 0 ou +1
-  currentHeight += change;
-  if (currentHeight < 15) currentHeight = 15;
-  if (currentHeight > 30) currentHeight = 30;
-  surfaceHeights.push(currentHeight);
-}
-
-// Gerar blocos com base na superfície
-for (let x = 0; x < mapWidth; x++) {
-  const surfaceY = surfaceHeights[x];
-
-  // Monte/grama
-  ground.push({
-    x: x * blockSize,
-    y: surfaceY * blockSize,
-    width: blockSize,
-    height: blockSize,
-    type: "grama"
-  });
-
-  // Terra: da camada abaixo da grama até a 9ª camada
-  for (let y = surfaceY + 1; y < surfaceY + 10; y++) {
-    if (y >= mapHeight) continue; // Evita ultrapassar limite do mundo visível
-    ground.push({
-      x: x * blockSize,
-      y: y * blockSize,
-      width: blockSize,
-      height: blockSize,
-      type: "terra"
-    });
-  }
-
-  // Pedra: a partir da 10ª camada abaixo da grama
-  for (let y = surfaceY + 10; y < mapHeight + 10; y++) {
-    ground.push({
-      x: x * blockSize,
-      y: y * blockSize,
-      width: blockSize,
-      height: blockSize,
-      type: "pedra"
-    });
-  }
-}
-
-
-
-
+// INICIAR LOOP
 gameLoop();
