@@ -7,6 +7,29 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <button id="pauseButton">
+  <img src="assets/UI/pause.png" alt="Pause" />
+</button>
+
+<div id="pauseMenu" style="display: none;">
+  <button id="resumeButton">Continuar</button>
+  <button id="optionsButton">Opções</button>
+  <button id="exitButton">Sair</button>
+</div>
+
+<div id="optionsMenu" style="display: none;">
+  <label>Volume:
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" />
+  </label><br/>
+  <label>Tecla esquerda:
+    <input type="text" id="leftKey" value="a" maxlength="1" />
+  </label><br/>
+  <label>Tecla direita:
+    <input type="text" id="rightKey" value="d" maxlength="1" />
+  </label><br/>
+  <button id="closeOptions">Fechar</button>
+</div>
+
   <canvas id="gameCanvas"></canvas>
 
   <script src="scripts/game.js"></script>

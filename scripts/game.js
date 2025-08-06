@@ -4,118 +4,94 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const tileSize = 32;
-const worldWidth = 400;
-const worldHeight = 50;
+const blockSize = 64;
+const mapWidth = 400;
+const mapHeight = 50;
+
+let camera = { x: 0, y: 0 };
+let keys = {};
+let leftKey = 'a';
+let rightKey = 'd';
+let isPaused = false;
 
 const player = {
   x: 100,
   y: 100,
-  width: tileSize,
-  height: tileSize,
+  width: blockSize,
+  height: blockSize,
   color: "blue",
-  dx: 0,
-  dy: 0,
-  speed: 4,
-  jumping: false,
-  gravity: 0.5,
-  jumpPower: -10,
-  grounded: false,
+  velocityX: 0,
+  velocityY: 0,
+  onGround: false
 };
 
-let keys = {};
+const gravity = 0.5;
+const jumpForce = -12;
+const moveSpeed = 5;
 
-const world = [];
-for (let y = 0; y < worldHeight; y++) {
-  const row = [];
-  for (let x = 0; x < worldWidth; x++) {
-    if (y >= worldHeight - 3) {
-      row.push(1); // chão
-    } else {
-      row.push(0);
-    }
-  }
-  world.push(row);
-}
+const ground = [];
 
-function drawWorld(offsetX, offsetY) {
-  for (let y = 0; y < worldHeight; y++) {
-    for (let x = 0; x < worldWidth; x++) {
-      if (world[y][x] === 1) {
-        ctx.fillStyle = "brown";
-        ctx.fillRect(
-          x * tileSize - offsetX,
-          y * tileSize - offsetY,
-          tileSize,
-          tileSize
-        );
-      }
+for (let y = 0; y < mapHeight; y++) {
+  for (let x = 0; x < mapWidth; x++) {
+    if (y >= mapHeight - 1) {
+      ground.push({ x: x * blockSize, y: y * blockSize, width: blockSize, height: blockSize });
     }
   }
 }
 
-function checkCollision(px, py) {
-  const leftTile = Math.floor(px / tileSize);
-  const rightTile = Math.floor((px + player.width - 1) / tileSize);
-  const topTile = Math.floor(py / tileSize);
-  const bottomTile = Math.floor((py + player.height - 1) / tileSize);
+const music = new Audio("assets/songs/game.mp3");
+music.loop = true;
 
-  for (let y = topTile; y <= bottomTile; y++) {
-    for (let x = leftTile; x <= rightTile; x++) {
-      if (
-        y >= 0 &&
-        y < worldHeight &&
-        x >= 0 &&
-        x < worldWidth &&
-        world[y][x] === 1
-      ) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
+document.addEventListener("click", () => {
+  if (music.paused) music.play();
+}, { once: true });
+
+document.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
 
 function update() {
-  player.dx = 0;
-  if (keys["ArrowLeft"] || keys["a"]) player.dx = -player.speed;
-  if (keys["ArrowRight"] || keys["d"]) player.dx = player.speed;
+  if (isPaused) return;
 
-  player.dy += player.gravity;
+  player.velocityY += gravity;
+  player.x += (keys[leftKey] ? -moveSpeed : 0) + (keys[rightKey] ? moveSpeed : 0);
+  player.y += player.velocityY;
 
-  // movimento horizontal
-  const newX = player.x + player.dx;
-  if (!checkCollision(newX, player.y)) {
-    player.x = newX;
-  }
-
-  // movimento vertical
-  const newY = player.y + player.dy;
-  if (!checkCollision(player.x, newY)) {
-    player.y = newY;
-    player.grounded = false;
-  } else {
-    if (player.dy > 0) {
-      player.grounded = true;
+  player.onGround = false;
+  for (let block of ground) {
+    if (
+      player.x < block.x + block.width &&
+      player.x + player.width > block.x &&
+      player.y < block.y + block.height &&
+      player.y + player.height > block.y
+    ) {
+      player.y = block.y - player.height;
+      player.velocityY = 0;
+      player.onGround = true;
     }
-    player.dy = 0;
   }
+
+  if (keys[" "] && player.onGround) {
+    player.velocityY = jumpForce;
+  }
+
+  camera.x = player.x - canvas.width / 2 + player.width / 2;
+  camera.y = player.y - canvas.height / 2 + player.height / 2;
 }
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const offsetX = player.x - canvas.width / 2 + player.width / 2;
-  const offsetY = player.y - canvas.height / 2 + player.height / 2;
 
-  drawWorld(offsetX, offsetY);
+  // fundo removido
+  ctx.fillStyle = "#333";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let block of ground) {
+    ctx.fillStyle = "brown";
+    ctx.fillRect(block.x - camera.x, block.y - camera.y, block.width, block.height);
+  }
 
   ctx.fillStyle = player.color;
-  ctx.fillRect(
-    player.x - offsetX,
-    player.y - offsetY,
-    player.width,
-    player.height
-  );
+  ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
 }
 
 function gameLoop() {
@@ -124,27 +100,46 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-document.addEventListener("keydown", (e) => {
-  keys[e.key] = true;
-  if ((e.key === " " || e.key === "ArrowUp" || e.key === "w") && player.grounded) {
-    player.dy = player.jumpPower;
-    player.grounded = false;
-  }
+const pauseBtn = document.getElementById("pauseButton");
+const pauseMenu = document.getElementById("pauseMenu");
+const optionsMenu = document.getElementById("optionsMenu");
+const resumeBtn = document.getElementById("resumeButton");
+const optionsBtn = document.getElementById("optionsButton");
+const exitBtn = document.getElementById("exitButton");
+const volumeSlider = document.getElementById("volumeSlider");
+const closeOptions = document.getElementById("closeOptions");
+
+pauseBtn.addEventListener("click", () => {
+  isPaused = true;
+  pauseMenu.style.display = "block";
 });
 
-document.addEventListener("keyup", (e) => {
-  keys[e.key] = false;
+resumeBtn.addEventListener("click", () => {
+  isPaused = false;
+  pauseMenu.style.display = "none";
 });
 
-window.addEventListener("load", () => {
-  const audio = new Audio("assets/songs/fundo.mp3");
-  audio.loop = true;
-
-  const startAudio = () => {
-    audio.play();
-    window.removeEventListener("click", startAudio);
-  };
-  window.addEventListener("click", startAudio);
-
-  gameLoop();
+optionsBtn.addEventListener("click", () => {
+  optionsMenu.style.display = "block";
 });
+
+exitBtn.addEventListener("click", () => {
+  window.location.href = "index.html";
+});
+
+closeOptions.addEventListener("click", () => {
+  optionsMenu.style.display = "none";
+});
+
+volumeSlider.addEventListener("input", () => {
+  music.volume = volumeSlider.value;
+});
+
+document.getElementById("leftKey").addEventListener("change", (e) => {
+  leftKey = e.target.value.toLowerCase();
+});
+document.getElementById("rightKey").addEventListener("change", (e) => {
+  rightKey = e.target.value.toLowerCase();
+});
+
+gameLoop();
