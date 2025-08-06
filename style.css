@@ -1,27 +1,23 @@
 body {
   margin: 0;
+  padding: 0;
   overflow: hidden;
-  font-family: sans-serif;
-}
-
-#background {
-  position: fixed;
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  z-index: -1;
+  background: url("assets/UI/fundo.png") no-repeat center center fixed;
+  background-size: cover;
+  font-family: Arial, sans-serif;
 }
 
 #menu {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 20px;
+  left: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  z-index: 2;
 }
 
-#menu button {
+button {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
@@ -29,9 +25,10 @@ body {
 
 #options {
   position: absolute;
-  top: 130px;
-  left: 10px;
+  top: 120px;
+  left: 20px;
   background: rgba(255,255,255,0.8);
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 5px;
+  z-index: 2;
 }
