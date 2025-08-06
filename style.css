@@ -1,27 +1,21 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
-  background: url('fundo.png') no-repeat center center fixed;
+  background-image: url('fundo.png');
   background-size: cover;
+  background-position: center;
+  font-family: Arial, sans-serif;
+  color: white;
+  text-align: center;
 }
 
 .menu {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  background-color: rgba(0, 0, 0, 0.6);
-  padding: 30px;
-  border-radius: 10px;
-  color: white;
+  margin-top: 100px;
 }
 
-.menu button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px 30px;
+button {
+  margin: 10px;
+  padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
 }
