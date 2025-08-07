@@ -39,6 +39,15 @@ document.addEventListener("click", () => {
 document.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
 document.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
 
+// 🖼️ CARREGAR TEXTURAS
+const textures = {};
+const textureTypes = ["grama", "terra", "pedra", "neve", "areia", "grama_escura"];
+for (let type of textureTypes) {
+  const img = new Image();
+  img.src = `assets/textures/${type}.png`;
+  textures[type] = img;
+}
+
 function update() {
   if (isPaused) return;
 
@@ -92,18 +101,17 @@ function draw() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   for (let block of ground) {
-    switch (block.type) {
-      case "grama": ctx.fillStyle = "green"; break;
-      case "terra": ctx.fillStyle = "brown"; break;
-      case "pedra": ctx.fillStyle = "gray"; break;
-      case "neve": ctx.fillStyle = "white"; break;
-      case "areia": ctx.fillStyle = "yellow"; break;
-      case "grama_escura": ctx.fillStyle = "#0f5f0f"; break;
-      default: ctx.fillStyle = "black";
+    const img = textures[block.type];
+    if (img && img.complete) {
+      ctx.drawImage(img, block.x - camera.x, block.y - camera.y, block.width, block.height);
+    } else {
+      // Fallback: bloco preto se textura não estiver carregada
+      ctx.fillStyle = "black";
+      ctx.fillRect(block.x - camera.x, block.y - camera.y, block.width, block.height);
     }
-    ctx.fillRect(block.x - camera.x, block.y - camera.y, block.width, block.height);
   }
 
+  // Jogador
   ctx.fillStyle = player.color;
   ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
 }
@@ -114,7 +122,7 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// PAUSE MENU + CONTROLES
+// 🎮 MENU DE PAUSA E OPÇÕES
 const pauseBtn = document.getElementById("pauseButton");
 const pauseMenu = document.getElementById("pauseMenu");
 const optionsMenu = document.getElementById("optionsMenu");
@@ -157,7 +165,15 @@ document.getElementById("rightKey").addEventListener("change", (e) => {
   rightKey = e.target.value.toLowerCase();
 });
 
-// GERAÇÃO DE MUNDO COM CAVERNAS NATURAIS
+function irParaBase() {
+  // Salva o inventário atual antes de sair (se quiser)
+  // localStorage.setItem("mochila", JSON.stringify(inventario));
+
+  window.location.href = "base.html";
+}
+
+
+// 🌍 GERAÇÃO DE MUNDO COM BIOMAS E CAVERNAS
 const seed = 12345;
 let rng = { value: seed };
 
@@ -198,7 +214,7 @@ for (let x = 0; x < mapWidth; x++) {
   }
 }
 
-// 🕳️ GERAÇÃO DE CAVERNAS AVANÇADAS
+// 🕳️ GERAÇÃO DE CAVERNAS
 function digCave(startX, startY, maxLength) {
   let x = startX;
   let y = startY;
@@ -219,7 +235,6 @@ function digCave(startX, startY, maxLength) {
       }
     }
 
-    // Caminho mais orgânico
     const dir = Math.floor(random(rng) * 4);
     if (dir === 0 && x < mapWidth - 1) x++;
     else if (dir === 1 && x > 0) x--;
@@ -232,7 +247,7 @@ function digCave(startX, startY, maxLength) {
 digCave(80, surfaceHeights[80] + 2, 150);
 digCave(300, surfaceHeights[300] + 2, 180);
 
-// TRANSFORMAR world[x][y] em ground[]
+// CONVERTE world[x][y] EM ground[]
 for (let x = 0; x < mapWidth; x++) {
   for (let y = 0; y < mapHeight + 10; y++) {
     const type = world[x][y];
@@ -247,6 +262,5 @@ for (let x = 0; x < mapWidth; x++) {
     }
   }
 }
-
 
 gameLoop();

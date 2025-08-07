@@ -32,3 +32,131 @@ button {
   border-radius: 5px;
   z-index: 2;
 }
+
+#baseBody {
+  margin: 0;
+  padding: 0;
+  background-image: url("assets/UI/base.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  font-family: sans-serif;
+}
+
+#interface {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+#inventory {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  display: grid;
+  grid-template-columns: repeat(2, 64px);
+  grid-template-rows: repeat(3, 64px);
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+#crafting {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+#inventory div,
+#craftGrid div,
+#craftResult {
+  width: 64px;
+  height: 64px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 2px solid #999;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 2px black;
+}
+
+#craftGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(3, 64px);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+#craftResult {
+  margin-top: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid gold;
+  text-align: center;
+}
+
+#craft-button {
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+#exploreBtn {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#mapaBody {
+  margin: 0;
+  padding: 0;
+  background-image: url("assets/UI/mapa.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#mapaContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.mapLocation {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.mapLocation:hover {
+  transform: scale(1.1);
+}
+
+/* Posição simulada dos locais */
+#loc1 { top: 40%; left: 20%; }
+#loc2 { top: 60%; left: 30%; }
+#loc3 { top: 30%; left: 70%; }
+#loc4 { top: 65%; left: 80%; }
+
+.mapLocation img {
+  width: 100%;
+  height: 100%;
+}
